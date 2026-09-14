@@ -4,6 +4,28 @@ Aplicação pessoal para importar extratos e faturas, classificar lançamentos, 
 
 > **Privacidade:** comprovantes, extratos, faturas e credenciais bancárias não são versionados neste repositório. Use apenas arquivos locais durante a importação.
 
+## Configuração concluída
+
+O banco usa o schema PostgreSQL `organizadorfinanceiro` no Supabase.
+
+Como a primeira migração já foi executada com as tabelas em `public`, execute agora `sql/0002_move_to_organizadorfinanceiro_schema.sql` no SQL Editor. Ela move as tabelas sem apagar os dados ou as políticas de RLS.
+
+No painel do Supabase, acrescente `organizadorfinanceiro` em **Project Settings → API → Exposed schemas**. Isso permite que o cliente use `supabase.schema("organizadorfinanceiro")`; não exponha o schema `auth`.
+
+## Executar localmente
+
+```bash
+npm install
+npm run dev
+```
+
+O arquivo `.env.local` deve conter:
+
+```env
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=SUA_CHAVE_PUBLICA
+```
+
 ## Primeira entrega
 
 - Importação local de CSV de banco e cartão.
@@ -12,29 +34,14 @@ Aplicação pessoal para importar extratos e faturas, classificar lançamentos, 
 - Visão mensal de receitas, despesas e saldo.
 - Modelo de dados com isolamento por usuário (RLS no Supabase).
 
-## Tecnologia
-
-- React + Vite
-- Supabase: PostgreSQL, autenticação e Row Level Security
-- Hospedagem opcional: Vercel Hobby
-
-## Executar localmente
-
-```bash
-cp .env.example .env.local
-npm install
-npm run dev
-```
-
-Execute antes `sql/0001_initial_schema.sql` no SQL Editor do projeto Supabase. Depois configure as variáveis no `.env.local`.
-
-## Armazenamento recomendado
-
-A primeira opção é **Supabase Free**: oferece PostgreSQL e autenticação, e o esquema deste repositório já usa RLS para impedir que um usuário consulte os dados de outro. O plano gratuito tem limites e projetos sem uso podem ser pausados; mantenha um export mensal como backup. A hospedagem no **Vercel Hobby** serve para uso pessoal/não comercial. Para uma opção totalmente local, use IndexedDB/SQLite — máxima privacidade, mas sem sincronização automática entre dispositivos.
-
 ## Próximos marcos
 
-1. Conectar a importação aos formatos Santander e Inter reais, mantendo os arquivos fora do Git.
-2. Tela de revisão de categorias e conciliação cartão x conta.
-3. Orçamento, calendário de vencimentos e painel de saúde financeira.
-4. Backup/exportação CSV e autenticação.
+1. Habilitar autenticação e criar a conta inicial.
+2. Conectar o importador aos formatos Santander e Inter, com persistência e deduplicação.
+3. Tela de revisão de categorias e conciliação cartão x conta.
+4. Orçamento, calendário de vencimentos e painel de saúde financeira.
+5. Exportação para backup.
+
+## Armazenamento
+
+Supabase Free armazena dados e autenticação; faça uma exportação mensal como backup. A hospedagem no Vercel Hobby é adequada para uso pessoal/não comercial.
