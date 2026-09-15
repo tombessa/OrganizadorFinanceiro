@@ -11,7 +11,7 @@ export LOCAL_POSTGRES_PASSWORD='defina-uma-senha-local'
 docker compose up --build
 ```
 
-Health check público: `GET http://localhost:8080/api/health`.
+Health checks públicos: `GET http://localhost:8080/` e `GET http://localhost:8080/api/health`.
 
 As demais rotas exigem `Authorization: Bearer <access_token>`:
 
