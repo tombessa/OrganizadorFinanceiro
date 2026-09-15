@@ -34,7 +34,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${SUPABASE_JWT_ISSUER:https://example.supabase.co/auth/v1}
+          issuer-uri: ${SUPABASE_JWT_ISSUER}
 
 management:
   endpoints:

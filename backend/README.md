@@ -37,5 +37,9 @@ Root Directory e selecione o `Dockerfile.vercel`. Mantenha o projeto atual da ra
 No backend, configure `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
 `SUPABASE_JWT_ISSUER` e `CORS_ALLOWED_ORIGINS`.
 
+`DATABASE_URL` deve começar com `jdbc:postgresql://`. O contêiner do Vercel escuta
+na porta padrão `80`; se a variável `PORT` for definida no projeto, o Spring usará
+o valor informado pelo Vercel.
+
 O arquivo original enviado não é armazenado. A API persiste somente nome, tipo, tamanho,
 SHA-256 e, nos próximos adaptadores, o conteúdo textual/estruturado extraído.
