@@ -1,47 +1,46 @@
 # Organizador Financeiro
 
-Aplicação pessoal para importar extratos e faturas, classificar lançamentos, acompanhar fluxo de caixa e apoiar a reorganização financeira.
+Aplicação pessoal para centralizar contas, cartões e importações financeiras com isolamento por usuário.
 
-> **Privacidade:** comprovantes, extratos, faturas e credenciais bancárias não são versionados neste repositório. Use apenas arquivos locais durante a importação.
+## Arquitetura
 
-## Configuração concluída
+- **Frontend:** React, TypeScript e Vite, publicado na Vercel.
+- **Autenticação:** Supabase Auth.
+- **API:** Spring Boot, com validação dos JWTs emitidos pelo Supabase.
+- **Dados:** PostgreSQL do Supabase, no schema `organizadorfinanceiro`.
+- **Documentos:** o backend calcula o SHA-256 e registra os metadados; o arquivo original não é retido.
 
-O banco usa o schema PostgreSQL `organizadorfinanceiro` no Supabase.
+O frontend não grava diretamente nas tabelas financeiras. Depois da autenticação, ele envia o access token para a API Spring usando o cabeçalho `Authorization: Bearer`.
 
-Como a primeira migração já foi executada com as tabelas em `public`, execute agora `sql/0002_move_to_organizadorfinanceiro_schema.sql` no SQL Editor. Ela move as tabelas sem apagar os dados ou as políticas de RLS.
+## Executar o frontend
 
-No painel do Supabase, acrescente `organizadorfinanceiro` em **Project Settings → API → Exposed schemas**. Isso permite que o cliente use `supabase.schema("organizadorfinanceiro")`; não exponha o schema `auth`.
-
-## Executar localmente
+1. Copie `.env.example` para `.env.local`.
+2. Preencha as variáveis públicas do projeto Supabase e a URL da API.
+3. Execute:
 
 ```bash
 npm install
 npm run dev
 ```
 
-O arquivo `.env.local` deve conter:
+Para validar a compilação de produção:
 
-```env
-VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_ANON_KEY=SUA_CHAVE_PUBLICA
+```bash
+npm run build
 ```
 
-## Primeira entrega
+## Variáveis do frontend na Vercel
 
-- Importação local de CSV de banco e cartão.
-- Normalização de lançamentos e prevenção de duplicidades.
-- Categorias, regras de categorização e revisão manual.
-- Visão mensal de receitas, despesas e saldo.
-- Modelo de dados com isolamento por usuário (RLS no Supabase).
+Configure estas variáveis para Production, Preview e Development:
 
-## Próximos marcos
+```dotenv
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-chave-publica-anon
+VITE_API_URL=https://organizador-financeiro-backend.vercel.app
+```
 
-1. Habilitar autenticação e criar a conta inicial.
-2. Conectar o importador aos formatos Santander e Inter, com persistência e deduplicação.
-3. Tela de revisão de categorias e conciliação cartão x conta.
-4. Orçamento, calendário de vencimentos e painel de saúde financeira.
-5. Exportação para backup.
+Depois de alterar variáveis na Vercel, faça um novo deploy para incorporá-las ao bundle do Vite.
 
-## Armazenamento
+## Backend
 
-Supabase Free armazena dados e autenticação; faça uma exportação mensal como backup. A hospedagem no Vercel Hobby é adequada para uso pessoal/não comercial.
+As instruções específicas da API estão em [`backend/README.md`](backend/README.md). As migrações SQL devem ser executadas na ordem numérica disponível em [`sql/`](sql/).

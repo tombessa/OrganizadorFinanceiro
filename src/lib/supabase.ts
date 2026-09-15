@@ -4,10 +4,18 @@ const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = url && key
-  ? createClient(url, key, { db: { schema: "organizadorfinanceiro" } })
+  ? createClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
   : null;
 
 export function requireSupabase() {
-  if (!supabase) throw new Error("Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY em .env.local.");
+  if (!supabase) {
+    throw new Error("Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+  }
   return supabase;
 }

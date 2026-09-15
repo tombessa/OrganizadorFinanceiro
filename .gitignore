@@ -6,4 +6,5 @@ coverage
 *.csv
 *.ofx
 *.pdf
+*.xlsx
 uploads/
