@@ -35,6 +35,9 @@ export interface ImportRegistration {
   byteSize: number;
   sha256: string;
   receivedAt: string;
+  storageStatus: "STORED" | "DELETED";
+  executionId: string | null;
+  executionStatus: "RECEIVED" | "PARSING" | "COMPLETED" | "COMPLETED_WITH_WARNINGS" | "FAILED" | "DUPLICATE";
   duplicate: boolean;
   suggestedHttpStatus: number;
 }

@@ -1,5 +1,10 @@
 create schema if not exists auth;
 
+create table if not exists auth.users (
+    id uuid primary key,
+    created_at timestamptz not null default now()
+);
+
 do $$
 begin
     if not exists (select 1 from pg_roles where rolname = 'anon') then
@@ -18,4 +23,3 @@ stable
 as $$
     select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
-

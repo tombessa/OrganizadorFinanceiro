@@ -8,11 +8,25 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AuthenticatedUser {
+    private final UserProvisioner userProvisioner;
+
+    public AuthenticatedUser(UserProvisioner userProvisioner) {
+        this.userProvisioner = userProvisioner;
+    }
+
     public UUID id(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
             throw new IllegalStateException("Usuário autenticado não encontrado");
         }
-        return UUID.fromString(jwt.getSubject());
+        UUID userId = UUID.fromString(jwt.getSubject());
+        userProvisioner.ensureExists(userId);
+        return userId;
+    }
+
+    public String accessToken(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            throw new IllegalStateException("Usuário autenticado não encontrado");
+        }
+        return jwt.getTokenValue();
     }
 }
-

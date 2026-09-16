@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,16 +29,25 @@ public class ImportController {
 
     @PostMapping(path = "/register", consumes = "multipart/form-data")
     ResponseEntity<Response> register(@RequestParam SourceAdapter adapter,
+                                      @RequestParam(required = false) UUID targetId,
                                       @RequestPart("file") MultipartFile file,
+                                      @RequestHeader(name = "X-Supabase-Api-Key", required = false) String apiKey,
                                       Authentication authentication) throws IOException {
-        ImportRegistrationService.Result result = service.register(authenticatedUser.id(authentication), adapter, file);
+        ImportRegistrationService.Result result = service.register(
+                authenticatedUser.id(authentication), adapter, targetId, file,
+                new ImportFileStorage.Credentials(authenticatedUser.accessToken(authentication), apiKey));
         ImportFile registered = result.file();
+        ImportExecution execution = result.execution();
         Response response = new Response(registered.getId(), registered.getSourceAdapter(), registered.getOriginalFilename(),
-                registered.getByteSize(), registered.getContentHash(), registered.getReceivedAt(), result.duplicate(),
+                registered.getByteSize(), registered.getContentHash(), registered.getReceivedAt(),
+                registered.getStorageStatus(), execution == null ? null : execution.getId(),
+                execution == null ? ImportExecutionStatus.DUPLICATE : execution.getStatus(), result.duplicate(),
                 result.duplicate() ? HttpStatus.OK.value() : HttpStatus.CREATED.value());
         return ResponseEntity.status(result.duplicate() ? HttpStatus.OK : HttpStatus.CREATED).body(response);
     }
 
     public record Response(UUID id, SourceAdapter adapter, String filename, long byteSize,
-                           String sha256, Instant receivedAt, boolean duplicate, int suggestedHttpStatus) {}
+                           String sha256, Instant receivedAt, StorageStatus storageStatus,
+                           UUID executionId, ImportExecutionStatus executionStatus,
+                           boolean duplicate, int suggestedHttpStatus) {}
 }

@@ -25,11 +25,17 @@ services:
       DATABASE_PASSWORD: ${LOCAL_POSTGRES_PASSWORD}
       SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER}
       CORS_ALLOWED_ORIGINS: http://localhost:5173
+      IMPORT_STORAGE_MODE: filesystem
+      IMPORT_STORAGE_ROOT: /var/lib/organizador-financeiro/imports
+      APP_USER_PROVISIONING_MODE: local
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - organizadorfinanceiro_imports:/var/lib/organizador-financeiro/imports
 
 volumes:
   organizadorfinanceiro_data:
+  organizadorfinanceiro_imports:

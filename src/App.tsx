@@ -57,7 +57,7 @@ export default function App() {
             <article><span>Cartões</span><strong>{counts.cards}</strong><small>faturas organizadas</small></article>
           </section>
           <FinancialSetup accessToken={session.access_token} onCountsChange={updateCounts} />
-          <ImportPanel accessToken={session.access_token} />
+          <ImportPanel key={`${counts.accounts}-${counts.cards}`} accessToken={session.access_token} />
         </>
       ) : (
         <section className="welcome-card">
@@ -65,7 +65,7 @@ export default function App() {
           {authMessage ? <p className="status error" role="alert">{authMessage}</p> : <ol><li>Crie ou acesse sua conta.</li><li>Cadastre suas instituições e contas.</li><li>Registre seus documentos com segurança.</li></ol>}
         </section>
       )}
-      <footer>Organizador Financeiro · seus arquivos originais não são retidos</footer>
+      <footer>Organizador Financeiro · arquivos privados, dados segregados por usuário</footer>
     </main>
   );
 }

@@ -18,6 +18,7 @@ export class ApiError extends Error {
 export async function apiRequest<T>(accessToken: string, path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${accessToken}`);
+  if (supabaseApiKey) headers.set("X-Supabase-Api-Key", supabaseApiKey);
   if (init.body && !(init.body instanceof FormData)) headers.set("Content-Type", "application/json");
 
   const response = await fetch(`${apiBaseUrl}${path}`, { ...init, headers });
@@ -42,3 +43,4 @@ export async function apiHealth(): Promise<boolean> {
     return false;
   }
 }
+import { supabaseApiKey } from "./supabase";

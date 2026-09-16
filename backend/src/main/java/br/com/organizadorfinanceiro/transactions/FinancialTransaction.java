@@ -1,0 +1,108 @@
+package br.com.organizadorfinanceiro.transactions;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import br.com.organizadorfinanceiro.accounts.FinancialAccount;
+import br.com.organizadorfinanceiro.cards.CreditCard;
+import br.com.organizadorfinanceiro.imports.SourceAdapter;
+import br.com.organizadorfinanceiro.shared.OwnedEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "financial_transaction", schema = "organizadorfinanceiro")
+public class FinancialTransaction extends OwnedEntity {
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "raw_transaction_id", nullable = false)
+    private RawTransaction rawTransaction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private FinancialAccount account;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "credit_card_id")
+    private CreditCard creditCard;
+
+    @Column(name = "transaction_date", nullable = false)
+    private LocalDate transactionDate;
+
+    @Column(name = "posting_date")
+    private LocalDate postingDate;
+
+    @Column(nullable = false, precision = 14, scale = 2)
+    private BigDecimal amount;
+
+    @Column(nullable = false, length = 3)
+    private String currency;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private TransactionDirection direction;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type", nullable = false, length = 40)
+    private TransactionType transactionType;
+
+    @Column(name = "raw_description", nullable = false)
+    private String rawDescription;
+
+    @Column(name = "normalized_description")
+    private String normalizedDescription;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 60)
+    private SourceAdapter source;
+
+    @Column(name = "source_reference", length = 255)
+    private String sourceReference;
+
+    @Column(name = "transaction_fingerprint", nullable = false, length = 64)
+    private String transactionFingerprint;
+
+    @Column(name = "classification_confidence", precision = 5, scale = 4)
+    private BigDecimal classificationConfidence;
+
+    @Column(name = "is_transfer", nullable = false)
+    private boolean transfer;
+
+    @Column(name = "is_reimbursement", nullable = false)
+    private boolean reimbursement;
+
+    @Column(name = "is_statement_payment", nullable = false)
+    private boolean statementPayment;
+
+    @Column(name = "is_recurring", nullable = false)
+    private boolean recurring;
+
+    protected FinancialTransaction() {
+    }
+
+    public RawTransaction getRawTransaction() { return rawTransaction; }
+    public FinancialAccount getAccount() { return account; }
+    public CreditCard getCreditCard() { return creditCard; }
+    public LocalDate getTransactionDate() { return transactionDate; }
+    public LocalDate getPostingDate() { return postingDate; }
+    public BigDecimal getAmount() { return amount; }
+    public String getCurrency() { return currency; }
+    public TransactionDirection getDirection() { return direction; }
+    public TransactionType getTransactionType() { return transactionType; }
+    public String getRawDescription() { return rawDescription; }
+    public String getNormalizedDescription() { return normalizedDescription; }
+    public SourceAdapter getSource() { return source; }
+    public String getSourceReference() { return sourceReference; }
+    public String getTransactionFingerprint() { return transactionFingerprint; }
+    public BigDecimal getClassificationConfidence() { return classificationConfidence; }
+    public boolean isTransfer() { return transfer; }
+    public boolean isReimbursement() { return reimbursement; }
+    public boolean isStatementPayment() { return statementPayment; }
+    public boolean isRecurring() { return recurring; }
+}
