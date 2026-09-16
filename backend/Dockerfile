@@ -3,13 +3,14 @@ WORKDIR /workspace
 COPY pom.xml .
 RUN mvn -B -q dependency:go-offline
 COPY src src
-RUN mvn -B -q clean package -DskipTests
+RUN mvn -B -q clean verify
 
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S app -G app
+RUN mkdir -p /var/lib/organizador-financeiro/imports \
+    && chown -R app:app /var/lib/organizador-financeiro
 WORKDIR /app
 COPY --from=build /workspace/target/backend-0.1.0-SNAPSHOT.jar app.jar
 USER app
 EXPOSE 8080
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]
-

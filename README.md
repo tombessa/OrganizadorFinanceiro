@@ -10,7 +10,7 @@ Frontend em produção: <https://organizador-financeiro-one.vercel.app/>
 - **Autenticação:** Supabase Auth.
 - **API:** Spring Boot, com validação dos JWTs emitidos pelo Supabase.
 - **Dados:** PostgreSQL do Supabase, no schema `organizadorfinanceiro`.
-- **Documentos:** o backend calcula o SHA-256 e registra os metadados; o arquivo original não é retido.
+- **Documentos:** o backend calcula o SHA-256, mantém o arquivo em bucket privado segregado por usuário e registra uma execução auditável.
 
 O frontend não grava diretamente nas tabelas financeiras. Depois da autenticação, ele envia o access token para a API Spring usando o cabeçalho `Authorization: Bearer`.
 
@@ -45,4 +45,4 @@ Depois de alterar variáveis na Vercel, faça um novo deploy para incorporá-las
 
 ## Backend
 
-As instruções específicas da API estão em [`backend/README.md`](backend/README.md). As migrações SQL devem ser executadas na ordem numérica disponível em [`sql/`](sql/).
+As instruções específicas da API estão em [`backend/README.md`](backend/README.md). As migrations do backend são gerenciadas pelo Flyway em `backend/src/main/resources/db/migration`.

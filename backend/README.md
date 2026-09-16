@@ -18,7 +18,7 @@ As demais rotas exigem `Authorization: Bearer <access_token>`:
 - `GET|POST /api/institutions`
 - `GET|POST /api/accounts`
 - `GET|POST /api/cards`
-- `POST /api/imports/register` (`multipart/form-data` com `adapter` e `file`)
+- `POST /api/imports/register` (`multipart/form-data` com `adapter`, `file` e `targetId` para conta/cartão)
 
 ## Supabase
 
@@ -35,11 +35,13 @@ O Flyway usa `baseline-version=2` porque as migrations SQL 0001 e 0002 já foram
 Crie um segundo projeto Vercel apontando para o mesmo repositório, configure `backend` como
 Root Directory e selecione o `Dockerfile.vercel`. Mantenha o projeto atual da raiz para o frontend.
 No backend, configure `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`,
-`SUPABASE_JWT_ISSUER` e `CORS_ALLOWED_ORIGINS`.
+`SUPABASE_JWT_ISSUER` e `CORS_ALLOWED_ORIGINS`. O Storage usa a URL derivada do emissor JWT,
+o bucket privado `financial-imports` e o JWT do próprio usuário; nenhuma `service_role` é necessária.
 
 `DATABASE_URL` deve começar com `jdbc:postgresql://`. O contêiner do Vercel escuta
 na porta padrão `80`; se a variável `PORT` for definida no projeto, o Spring usará
 o valor informado pelo Vercel.
 
-O arquivo original enviado não é armazenado. A API persiste somente nome, tipo, tamanho,
-SHA-256 e, nos próximos adaptadores, o conteúdo textual/estruturado extraído.
+Em produção, o arquivo original fica no bucket privado `financial-imports`, em caminho iniciado
+pelo `user_id` e protegido por RLS. Em Docker Compose, ele fica no volume privado
+`organizadorfinanceiro_imports`. A API persiste hash, localização, execução e auditoria.

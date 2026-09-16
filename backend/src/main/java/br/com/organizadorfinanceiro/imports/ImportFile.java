@@ -29,6 +29,16 @@ public class ImportFile extends OwnedEntity {
     @Column(name = "content_hash", nullable = false, length = 64)
     private String contentHash;
 
+    @Column(name = "storage_bucket", nullable = false, length = 100)
+    private String storageBucket;
+
+    @Column(name = "storage_path", nullable = false, length = 700)
+    private String storagePath;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "storage_status", nullable = false, length = 20)
+    private StorageStatus storageStatus;
+
     @Column(name = "received_at", nullable = false, updatable = false)
     private Instant receivedAt;
 
@@ -36,13 +46,17 @@ public class ImportFile extends OwnedEntity {
     }
 
     public ImportFile(UUID userId, SourceAdapter sourceAdapter, String originalFilename,
-                      String contentType, long byteSize, String contentHash) {
+                      String contentType, long byteSize, String contentHash,
+                      String storageBucket, String storagePath) {
         super(userId);
         this.sourceAdapter = sourceAdapter;
         this.originalFilename = originalFilename;
         this.contentType = contentType;
         this.byteSize = byteSize;
         this.contentHash = contentHash;
+        this.storageBucket = storageBucket;
+        this.storagePath = storagePath;
+        this.storageStatus = StorageStatus.STORED;
         this.receivedAt = Instant.now();
     }
 
@@ -51,6 +65,8 @@ public class ImportFile extends OwnedEntity {
     public String getContentType() { return contentType; }
     public long getByteSize() { return byteSize; }
     public String getContentHash() { return contentHash; }
+    public String getStorageBucket() { return storageBucket; }
+    public String getStoragePath() { return storagePath; }
+    public StorageStatus getStorageStatus() { return storageStatus; }
     public Instant getReceivedAt() { return receivedAt; }
 }
-

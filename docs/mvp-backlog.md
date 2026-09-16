@@ -9,9 +9,14 @@
 - [x] Instituições, contas e cartões.
 - [x] Metadados de arquivo, execução, RAW, transação e auditoria.
 - [x] Docker Compose local e `Dockerfile.vercel`.
-- [ ] Frontend consumindo a API em vez das tabelas.
+- [x] Frontend consumindo a API em vez das tabelas.
+- [x] Bucket privado/volume local para retenção segura do arquivo.
+- [x] Isolamento relacional por `user_id` e vínculo com `auth.users`.
+- [x] Tabelas legadas vazias aposentadas com trava contra perda de dados.
+- [x] Fila estrutural de avisos e versionamento de adaptador/regras.
 
-Aceite: subir localmente, autenticar, cadastrar instituições/contas/cartões e registrar com segurança os metadados de uma importação.
+Aceite: subir localmente, autenticar, cadastrar instituições/contas/cartões, armazenar o arquivo
+com acesso privado e criar `ImportFile`, `ImportExecution` e auditoria sem iniciar o parser.
 
 ## Marco 2 - Importação real
 

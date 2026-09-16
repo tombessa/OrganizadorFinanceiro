@@ -18,9 +18,8 @@ class AuthenticatedUserTest {
         Jwt jwt = new Jwt("token", Instant.now(), Instant.now().plusSeconds(60),
                 Map.of("alg", "none"), Map.of("sub", id.toString(), "aud", List.of("authenticated")));
 
-        UUID actual = new AuthenticatedUser().id(new JwtAuthenticationToken(jwt));
+        UUID actual = new AuthenticatedUser(userId -> { }).id(new JwtAuthenticationToken(jwt));
 
         assertThat(actual).isEqualTo(id);
     }
 }
-

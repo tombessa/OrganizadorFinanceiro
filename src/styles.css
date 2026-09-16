@@ -211,7 +211,7 @@ label { display: block; margin: 16px 0 6px; font-size: 0.78rem; font-weight: 700
 .import-workspace .section-kicker { color: #9ed8bd; }
 .import-workspace .section-description { color: #c3d3cd; }
 .privacy-badge { padding: 7px 10px; border: 1px solid rgba(255,255,255,0.22); border-radius: 999px; color: #d8e8e2; font-size: 0.78rem; }
-.import-form { display: grid; grid-template-columns: minmax(180px, 0.75fr) minmax(260px, 1.6fr) auto; align-items: end; gap: 14px; }
+.import-form { display: grid; grid-template-columns: minmax(170px, 0.8fr) minmax(170px, 0.8fr) minmax(240px, 1.5fr) auto; align-items: end; gap: 14px; }
 .import-form label { color: #dce8e3; }
 .file-field small { display: block; margin-top: 6px; color: #9fb8ae; }
 .selected-file { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.08); }

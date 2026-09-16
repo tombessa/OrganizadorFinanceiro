@@ -52,5 +52,12 @@ management:
       show-details: never
 
 app:
+  user-provisioning:
+    mode: ${APP_USER_PROVISIONING_MODE:none}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  import-storage:
+    mode: ${IMPORT_STORAGE_MODE:supabase}
+    root: ${IMPORT_STORAGE_ROOT:/var/lib/organizador-financeiro/imports}
+    supabase-url: ${SUPABASE_URL:${SUPABASE_JWT_ISSUER:}}
+    bucket: ${IMPORT_STORAGE_BUCKET:financial-imports}

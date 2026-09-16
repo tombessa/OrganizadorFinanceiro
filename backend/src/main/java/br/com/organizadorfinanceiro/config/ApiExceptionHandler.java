@@ -1,5 +1,6 @@
 package br.com.organizadorfinanceiro.config;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -24,6 +25,13 @@ public class ApiExceptionHandler {
                 .toList();
         return ResponseEntity.badRequest().body(new ErrorResponse(Instant.now(), HttpStatus.BAD_REQUEST.value(),
                 "Dados inválidos", details));
+    }
+
+    @ExceptionHandler(IOException.class)
+    ResponseEntity<ErrorResponse> storage(IOException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(
+                Instant.now(), HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "Não foi possível armazenar o arquivo com segurança", List.of()));
     }
 
     record ErrorResponse(Instant timestamp, int status, String message, List<String> details) {
