@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: organizador-financeiro-backend
+  main:
+    lazy-initialization: ${SPRING_MAIN_LAZY_INITIALIZATION:true}
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/organizadorfinanceiro}
     username: ${DATABASE_USER}
@@ -11,6 +13,10 @@ spring:
     hikari:
       maximum-pool-size: ${DATABASE_POOL_SIZE:5}
       minimum-idle: 0
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: lazy
   jpa:
     open-in-view: false
     hibernate:
