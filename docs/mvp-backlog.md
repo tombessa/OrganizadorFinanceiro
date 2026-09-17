@@ -22,6 +22,16 @@ com acesso privado e criar `ImportFile`, `ImportExecution` e auditoria sem inici
 
 Ordem: conta CSV, cartão CSV, cartão XLSX, conta PDF e documento de remuneração PDF.
 
+- [x] Contrato real do extrato da conta Inter validado em UTF-8 e valores brasileiros.
+- [x] Parser da conta Inter com conferência do saldo corrente e saldo final.
+- [x] RAW imutável e transação normalizada persistidos na mesma execução.
+- [x] Fingerprint por conta, data, descrição, valor e saldo após o lançamento.
+- [x] Relatório de detectados, importados, duplicados e avisos na resposta e no frontend.
+- [ ] Fatura do cartão Inter em CSV.
+- [ ] Fatura do cartão Itaú em XLSX.
+- [ ] Extrato da conta Santander em PDF.
+- [ ] Contracheque em PDF.
+
 Aceite: todos os arquivos históricos importam sem erro e a segunda importação não duplica lançamentos.
 
 ## Marco 3 - Inteligência financeira

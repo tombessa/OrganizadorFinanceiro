@@ -41,7 +41,11 @@ public class ImportController {
         Response response = new Response(registered.getId(), registered.getSourceAdapter(), registered.getOriginalFilename(),
                 registered.getByteSize(), registered.getContentHash(), registered.getReceivedAt(),
                 registered.getStorageStatus(), execution == null ? null : execution.getId(),
-                execution == null ? ImportExecutionStatus.DUPLICATE : execution.getStatus(), result.duplicate(),
+                execution == null ? ImportExecutionStatus.DUPLICATE : execution.getStatus(),
+                execution == null ? 0 : execution.getDetectedRows(),
+                execution == null ? 0 : execution.getImportedRows(),
+                execution == null ? 0 : execution.getDuplicateRows(),
+                execution == null ? 0 : execution.getWarningCount(), result.duplicate(),
                 result.duplicate() ? HttpStatus.OK.value() : HttpStatus.CREATED.value());
         return ResponseEntity.status(result.duplicate() ? HttpStatus.OK : HttpStatus.CREATED).body(response);
     }
@@ -49,5 +53,6 @@ public class ImportController {
     public record Response(UUID id, SourceAdapter adapter, String filename, long byteSize,
                            String sha256, Instant receivedAt, StorageStatus storageStatus,
                            UUID executionId, ImportExecutionStatus executionStatus,
+                           int detectedRows, int importedRows, int duplicateRows, int warningCount,
                            boolean duplicate, int suggestedHttpStatus) {}
 }

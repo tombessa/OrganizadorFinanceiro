@@ -45,4 +45,3 @@ public abstract class OwnedEntity {
         return createdAt;
     }
 }
-

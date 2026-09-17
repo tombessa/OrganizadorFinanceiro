@@ -38,6 +38,10 @@ export interface ImportRegistration {
   storageStatus: "STORED" | "DELETED";
   executionId: string | null;
   executionStatus: "RECEIVED" | "PARSING" | "COMPLETED" | "COMPLETED_WITH_WARNINGS" | "FAILED" | "DUPLICATE";
+  detectedRows: number;
+  importedRows: number;
+  duplicateRows: number;
+  warningCount: number;
   duplicate: boolean;
   suggestedHttpStatus: number;
 }

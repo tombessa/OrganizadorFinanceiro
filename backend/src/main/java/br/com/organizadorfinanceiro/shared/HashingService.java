@@ -2,6 +2,7 @@ package br.com.organizadorfinanceiro.shared;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
@@ -23,5 +24,13 @@ public class HashingService {
             throw new IllegalStateException("SHA-256 indisponível", impossible);
         }
     }
-}
 
+    public String sha256(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException("SHA-256 indisponível", impossible);
+        }
+    }
+}

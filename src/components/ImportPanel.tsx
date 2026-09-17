@@ -5,11 +5,11 @@ import type { CreditCard, FinancialAccount, ImportRegistration, SourceAdapter } 
 interface ImportPanelProps { accessToken: string; }
 
 const adapterOptions: Array<{ value: SourceAdapter; label: string; accept: string }> = [
-  { value: "INTER_ACCOUNT_CSV", label: "Conta — CSV", accept: ".csv,text/csv" },
-  { value: "INTER_CARD_CSV", label: "Cartão — CSV", accept: ".csv,text/csv" },
-  { value: "ITAU_CARD_XLSX", label: "Cartão — XLSX", accept: ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
-  { value: "SANTANDER_ACCOUNT_PDF", label: "Conta — PDF", accept: ".pdf,application/pdf" },
-  { value: "PAYROLL_PDF", label: "Remuneração — PDF", accept: ".pdf,application/pdf" },
+  { value: "INTER_ACCOUNT_CSV", label: "Inter — Conta (CSV)", accept: ".csv,text/csv" },
+  { value: "INTER_CARD_CSV", label: "Inter — Cartão (CSV)", accept: ".csv,text/csv" },
+  { value: "ITAU_CARD_XLSX", label: "Itaú — Cartão (XLSX)", accept: ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+  { value: "SANTANDER_ACCOUNT_PDF", label: "Santander — Conta (PDF)", accept: ".pdf,application/pdf" },
+  { value: "PAYROLL_PDF", label: "Contracheque (PDF)", accept: ".pdf,application/pdf" },
 ];
 
 export default function ImportPanel({ accessToken }: ImportPanelProps) {
@@ -53,7 +53,13 @@ export default function ImportPanel({ accessToken }: ImportPanelProps) {
       form.set("file", file);
       const registered = await apiRequest<ImportRegistration>(accessToken, "/api/imports/register", { method: "POST", body: form });
       setResult(registered);
-      setMessage(registered.duplicate ? "Este arquivo já havia sido registrado. Nenhuma cópia foi criada." : "Arquivo armazenado de forma privada e execução preparada.");
+      if (registered.duplicate) {
+        setMessage("Este arquivo já havia sido registrado. Nenhuma cópia foi criada.");
+      } else if (registered.executionStatus === "COMPLETED" || registered.executionStatus === "COMPLETED_WITH_WARNINGS") {
+        setMessage(`Importação concluída: ${registered.importedRows} novo(s) e ${registered.duplicateRows} duplicado(s).`);
+      } else {
+        setMessage("Arquivo armazenado de forma privada e execução preparada.");
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Não foi possível registrar o arquivo.");
     } finally {
@@ -64,17 +70,17 @@ export default function ImportPanel({ accessToken }: ImportPanelProps) {
   return (
     <section className="workspace import-workspace" aria-labelledby="import-title">
       <header className="section-heading"><div><span className="section-kicker">IMPORTAÇÃO</span><h2 id="import-title">Registrar uma fonte</h2></div><span className="privacy-badge">Armazenamento privado</span></header>
-      <p className="section-description">O arquivo é assinado com SHA-256, armazenado em área privada do usuário e recebe uma execução auditável. A extração dos lançamentos começa no próximo marco.</p>
+      <p className="section-description">O extrato da conta Inter já é extraído e conciliado. Os demais formatos ficam armazenados com segurança enquanto seus adaptadores são habilitados.</p>
       <form className="import-form" onSubmit={submit}>
         <div><label htmlFor="adapter">Tipo de documento</label><select id="adapter" value={adapter} onChange={(event) => { setAdapter(event.target.value as SourceAdapter); setTargetId(""); setFile(null); setResult(null); }}>
           {adapterOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
         </select></div>
         {targetType !== "PAYROLL" ? <div><label htmlFor="import-target">{targetType === "ACCOUNT" ? "Conta" : "Cartão"}</label><select id="import-target" value={targetId} onChange={(event) => setTargetId(event.target.value)} required><option value="">Selecione</option>{targets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div> : null}
         <div className="file-field"><label htmlFor="financial-file">Arquivo</label><input key={adapter} id="financial-file" type="file" accept={accept} onChange={(event) => setFile(event.target.files?.[0] ?? null)} required /><small>Até 10 MB. Acesso restrito ao usuário autenticado.</small></div>
-        <button type="submit" className="button primary" disabled={!file || submitting || (targetType !== "PAYROLL" && !targetId)}>{submitting ? "Armazenando…" : "Armazenar arquivo"}</button>
+        <button type="submit" className="button primary" disabled={!file || submitting || (targetType !== "PAYROLL" && !targetId)}>{submitting ? "Importando…" : "Importar arquivo"}</button>
       </form>
       {file ? <div className="selected-file"><span>{file.name}</span><small>{(file.size / 1024).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} KB</small></div> : null}
-      {result ? <dl className="import-result"><div><dt>Situação</dt><dd>{result.duplicate ? "Já registrado" : result.executionStatus}</dd></div><div><dt>Recebido em</dt><dd>{new Date(result.receivedAt).toLocaleString("pt-BR")}</dd></div><div className="hash"><dt>SHA-256</dt><dd>{result.sha256}</dd></div></dl> : null}
+      {result ? <dl className="import-result"><div><dt>Situação</dt><dd>{result.duplicate ? "Já registrado" : result.executionStatus}</dd></div><div><dt>Detectados</dt><dd>{result.detectedRows}</dd></div><div><dt>Novos</dt><dd>{result.importedRows}</dd></div><div><dt>Duplicados</dt><dd>{result.duplicateRows}</dd></div><div><dt>Recebido em</dt><dd>{new Date(result.receivedAt).toLocaleString("pt-BR")}</dd></div><div className="hash"><dt>SHA-256</dt><dd>{result.sha256}</dd></div></dl> : null}
       {message ? <p className="status" role="status">{message}</p> : null}
     </section>
   );

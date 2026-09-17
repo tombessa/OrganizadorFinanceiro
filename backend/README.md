@@ -20,6 +20,10 @@ As demais rotas exigem `Authorization: Bearer <access_token>`:
 - `GET|POST /api/cards`
 - `POST /api/imports/register` (`multipart/form-data` com `adapter`, `file` e `targetId` para conta/cartão)
 
+`INTER_ACCOUNT_CSV` já executa o pipeline completo: valida metadados e saldos, grava RAW,
+normaliza os lançamentos e informa quantidades detectadas, novas e duplicadas. Os demais
+adaptadores permanecem no estado `RECEIVED` até seus incrementos do Marco 2.
+
 ## Supabase
 
 Use a conexão PostgreSQL/pooler do projeto e configure o emissor JWT como:
