@@ -41,3 +41,10 @@ impedindo referências cruzadas entre usuários mesmo em caso de falha na camada
 - Registro bruto: execução + número lógico da linha.
 - Transação: fingerprint específica do adaptador, usando os identificadores disponíveis.
 - Duas operações legítimas com mesma data, descrição e valor não podem ser colapsadas sem evidência adicional.
+
+### Extrato da conta Inter
+
+O fingerprint inclui a conta selecionada, a data, a descrição canônica, o valor assinado e o
+saldo após o lançamento. O saldo diferencia eventos legítimos iguais no mesmo dia e permanece
+estável quando dois extratos possuem períodos sobrepostos. O sinal define somente `DEBIT` ou
+`CREDIT`; a natureza econômica permanece `ADJUSTMENT` até o motor explicável do Marco 3.

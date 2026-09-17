@@ -1,6 +1,7 @@
 package br.com.organizadorfinanceiro.transactions;
 
 import java.util.Map;
+import java.util.UUID;
 
 import br.com.organizadorfinanceiro.imports.ImportExecution;
 import br.com.organizadorfinanceiro.shared.OwnedEntity;
@@ -45,6 +46,20 @@ public class RawTransaction extends OwnedEntity {
     private String rawFingerprint;
 
     protected RawTransaction() {
+    }
+
+    public RawTransaction(UUID userId, ImportExecution importExecution, int sourceRowNumber,
+                          String sourceReference, String rawDate, String rawDescription,
+                          String rawAmount, Map<String, Object> rawPayload, String rawFingerprint) {
+        super(userId);
+        this.importExecution = importExecution;
+        this.sourceRowNumber = sourceRowNumber;
+        this.sourceReference = sourceReference;
+        this.rawDate = rawDate;
+        this.rawDescription = rawDescription;
+        this.rawAmount = rawAmount;
+        this.rawPayload = Map.copyOf(rawPayload);
+        this.rawFingerprint = rawFingerprint;
     }
 
     public ImportExecution getImportExecution() { return importExecution; }

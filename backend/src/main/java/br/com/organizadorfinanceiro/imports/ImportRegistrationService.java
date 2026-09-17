@@ -11,6 +11,9 @@ import br.com.organizadorfinanceiro.accounts.FinancialAccountRepository;
 import br.com.organizadorfinanceiro.audit.AuditService;
 import br.com.organizadorfinanceiro.cards.CreditCard;
 import br.com.organizadorfinanceiro.cards.CreditCardRepository;
+import br.com.organizadorfinanceiro.imports.inter.InterAccountCsvParser;
+import br.com.organizadorfinanceiro.imports.inter.InterAccountImportProcessor;
+import br.com.organizadorfinanceiro.imports.inter.InterAccountStatement;
 import br.com.organizadorfinanceiro.shared.HashingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,8 @@ public class ImportRegistrationService {
     private final ImportFileStorage storage;
     private final HashingService hashingService;
     private final AuditService auditService;
+    private final InterAccountCsvParser interAccountParser;
+    private final InterAccountImportProcessor interAccountProcessor;
 
     public ImportRegistrationService(ImportFileRepository repository,
                                      ImportExecutionRepository executionRepository,
@@ -32,7 +37,9 @@ public class ImportRegistrationService {
                                      CreditCardRepository cardRepository,
                                      ImportFileStorage storage,
                                      HashingService hashingService,
-                                     AuditService auditService) {
+                                     AuditService auditService,
+                                     InterAccountCsvParser interAccountParser,
+                                     InterAccountImportProcessor interAccountProcessor) {
         this.repository = repository;
         this.executionRepository = executionRepository;
         this.accountRepository = accountRepository;
@@ -40,6 +47,8 @@ public class ImportRegistrationService {
         this.storage = storage;
         this.hashingService = hashingService;
         this.auditService = auditService;
+        this.interAccountParser = interAccountParser;
+        this.interAccountProcessor = interAccountProcessor;
     }
 
     @Transactional
@@ -60,17 +69,28 @@ public class ImportRegistrationService {
                     .orElse(null);
             return new Result(existing.get(), execution, true);
         }
-        return registerNew(userId, adapter, target, multipartFile, filename, hash, credentials);
+        InterAccountStatement interAccountStatement = null;
+        if (adapter == SourceAdapter.INTER_ACCOUNT_CSV) {
+            try (InputStream input = multipartFile.getInputStream()) {
+                interAccountStatement = interAccountParser.parse(input);
+            }
+        }
+        return registerNew(userId, adapter, target, multipartFile, filename, hash,
+                credentials, interAccountStatement);
     }
 
     private Result registerNew(UUID userId, SourceAdapter adapter, Target target, MultipartFile multipartFile,
-                               String filename, String hash, ImportFileStorage.Credentials credentials) throws IOException {
+                               String filename, String hash, ImportFileStorage.Credentials credentials,
+                               InterAccountStatement interAccountStatement) throws IOException {
         ImportFileStorage.StoredObject object = storage.store(userId, adapter, hash, multipartFile, credentials);
         try {
             ImportFile imported = repository.save(new ImportFile(userId, adapter, filename,
                     contentType(adapter), multipartFile.getSize(), hash, object.bucket(), object.path()));
             ImportExecution execution = executionRepository.save(new ImportExecution(
                     userId, imported, target.account(), target.card(), adapter));
+            if (interAccountStatement != null) {
+                interAccountProcessor.process(userId, execution, target.account(), interAccountStatement);
+            }
             auditService.created(userId, "IMPORT_FILE", imported.getId(), Map.of(
                     "sourceAdapter", adapter.name(),
                     "filename", filename,
@@ -82,7 +102,11 @@ public class ImportRegistrationService {
                     "targetType", execution.getTargetType().name(),
                     "status", execution.getStatus().name(),
                     "adapterVersion", execution.getAdapterVersion(),
-                    "rulesVersion", execution.getRulesVersion()));
+                    "rulesVersion", execution.getRulesVersion(),
+                    "detectedRows", execution.getDetectedRows(),
+                    "importedRows", execution.getImportedRows(),
+                    "duplicateRows", execution.getDuplicateRows(),
+                    "warningCount", execution.getWarningCount()));
             return new Result(imported, execution, false);
         } catch (RuntimeException exception) {
             storage.delete(object, credentials);

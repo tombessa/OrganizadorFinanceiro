@@ -1,0 +1,11 @@
+Extrato Conta Corrente 
+Conta ;12345678
+Período ;01/01/2026 a 05/01/2026
+Saldo: ;160,00
+
+Data Lançamento;Descrição;Valor;Saldo
+01/01/2026;Crédito inicial: "Origem A";100,00;100,00
+02/01/2026;Pagamento: "Fornecedor B";-20,00;80,00
+03/01/2026;Pix recebido: "Pessoa C";50,00;130,00
+04/01/2026;Pix enviado: "Pessoa D";-10,00;120,00
+05/01/2026;Cashback: "Loja E";40,00;160,00

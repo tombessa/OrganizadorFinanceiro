@@ -84,6 +84,24 @@ public class ImportExecution extends OwnedEntity {
         this.startedAt = Instant.now();
     }
 
+    public void markParsing() {
+        this.status = ImportExecutionStatus.PARSING;
+    }
+
+    public void complete(int detectedRows, int importedRows, int duplicateRows, int warningCount) {
+        if (detectedRows != importedRows + duplicateRows) {
+            throw new IllegalArgumentException("Contagens da importação não reconciliam");
+        }
+        this.detectedRows = detectedRows;
+        this.importedRows = importedRows;
+        this.duplicateRows = duplicateRows;
+        this.warningCount = warningCount;
+        this.status = warningCount == 0
+                ? ImportExecutionStatus.COMPLETED
+                : ImportExecutionStatus.COMPLETED_WITH_WARNINGS;
+        this.finishedAt = Instant.now();
+    }
+
     public ImportFile getImportFile() { return importFile; }
     public FinancialAccount getAccount() { return account; }
     public CreditCard getCreditCard() { return creditCard; }

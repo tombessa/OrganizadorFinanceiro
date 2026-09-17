@@ -2,6 +2,7 @@ package br.com.organizadorfinanceiro.transactions;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import br.com.organizadorfinanceiro.accounts.FinancialAccount;
 import br.com.organizadorfinanceiro.cards.CreditCard;
@@ -84,6 +85,32 @@ public class FinancialTransaction extends OwnedEntity {
     private boolean recurring;
 
     protected FinancialTransaction() {
+    }
+
+    private FinancialTransaction(UUID userId) {
+        super(userId);
+    }
+
+    public static FinancialTransaction fromAccountStatement(UUID userId, RawTransaction rawTransaction,
+                                                             FinancialAccount account, LocalDate transactionDate,
+                                                             BigDecimal signedAmount, String description,
+                                                             String sourceReference, String fingerprint) {
+        FinancialTransaction transaction = new FinancialTransaction(userId);
+        transaction.rawTransaction = rawTransaction;
+        transaction.account = account;
+        transaction.transactionDate = transactionDate;
+        transaction.postingDate = transactionDate;
+        transaction.amount = signedAmount.abs();
+        transaction.currency = "BRL";
+        transaction.direction = signedAmount.signum() < 0
+                ? TransactionDirection.DEBIT : TransactionDirection.CREDIT;
+        transaction.transactionType = TransactionType.ADJUSTMENT;
+        transaction.rawDescription = description;
+        transaction.normalizedDescription = description;
+        transaction.source = SourceAdapter.INTER_ACCOUNT_CSV;
+        transaction.sourceReference = sourceReference;
+        transaction.transactionFingerprint = fingerprint;
+        return transaction;
     }
 
     public RawTransaction getRawTransaction() { return rawTransaction; }
