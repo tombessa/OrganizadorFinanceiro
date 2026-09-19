@@ -53,6 +53,10 @@ public class FinancialTransaction extends OwnedEntity {
     @Column(name = "transaction_type", nullable = false, length = 40)
     private TransactionType transactionType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "posting_status", nullable = false, length = 20)
+    private TransactionPostingStatus postingStatus;
+
     @Column(name = "raw_description", nullable = false)
     private String rawDescription;
 
@@ -105,9 +109,34 @@ public class FinancialTransaction extends OwnedEntity {
         transaction.direction = signedAmount.signum() < 0
                 ? TransactionDirection.DEBIT : TransactionDirection.CREDIT;
         transaction.transactionType = TransactionType.ADJUSTMENT;
+        transaction.postingStatus = TransactionPostingStatus.POSTED;
         transaction.rawDescription = description;
         transaction.normalizedDescription = description;
         transaction.source = SourceAdapter.INTER_ACCOUNT_CSV;
+        transaction.sourceReference = sourceReference;
+        transaction.transactionFingerprint = fingerprint;
+        return transaction;
+    }
+
+    public static FinancialTransaction fromCardStatement(UUID userId, RawTransaction rawTransaction,
+                                                          CreditCard creditCard, LocalDate transactionDate,
+                                                          BigDecimal signedAmount, String description,
+                                                          String sourceReference, String fingerprint,
+                                                          TransactionPostingStatus postingStatus) {
+        FinancialTransaction transaction = new FinancialTransaction(userId);
+        transaction.rawTransaction = rawTransaction;
+        transaction.creditCard = creditCard;
+        transaction.transactionDate = transactionDate;
+        transaction.postingDate = postingStatus == TransactionPostingStatus.POSTED ? transactionDate : null;
+        transaction.amount = signedAmount.abs();
+        transaction.currency = "BRL";
+        transaction.direction = signedAmount.signum() < 0
+                ? TransactionDirection.CREDIT : TransactionDirection.DEBIT;
+        transaction.transactionType = TransactionType.ADJUSTMENT;
+        transaction.postingStatus = postingStatus;
+        transaction.rawDescription = description;
+        transaction.normalizedDescription = description;
+        transaction.source = SourceAdapter.INTER_CARD_CSV;
         transaction.sourceReference = sourceReference;
         transaction.transactionFingerprint = fingerprint;
         return transaction;
@@ -122,6 +151,7 @@ public class FinancialTransaction extends OwnedEntity {
     public String getCurrency() { return currency; }
     public TransactionDirection getDirection() { return direction; }
     public TransactionType getTransactionType() { return transactionType; }
+    public TransactionPostingStatus getPostingStatus() { return postingStatus; }
     public String getRawDescription() { return rawDescription; }
     public String getNormalizedDescription() { return normalizedDescription; }
     public SourceAdapter getSource() { return source; }

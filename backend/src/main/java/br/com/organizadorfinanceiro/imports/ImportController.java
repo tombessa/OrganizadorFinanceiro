@@ -30,17 +30,19 @@ public class ImportController {
     @PostMapping(path = "/register", consumes = "multipart/form-data")
     ResponseEntity<Response> register(@RequestParam SourceAdapter adapter,
                                       @RequestParam(required = false) UUID targetId,
+                                      @RequestParam(required = false) ImportDocumentStatus documentStatus,
                                       @RequestPart("file") MultipartFile file,
                                       @RequestHeader(name = "X-Supabase-Api-Key", required = false) String apiKey,
                                       Authentication authentication) throws IOException {
         ImportRegistrationService.Result result = service.register(
-                authenticatedUser.id(authentication), adapter, targetId, file,
+                authenticatedUser.id(authentication), adapter, targetId, documentStatus, file,
                 new ImportFileStorage.Credentials(authenticatedUser.accessToken(authentication), apiKey));
         ImportFile registered = result.file();
         ImportExecution execution = result.execution();
         Response response = new Response(registered.getId(), registered.getSourceAdapter(), registered.getOriginalFilename(),
                 registered.getByteSize(), registered.getContentHash(), registered.getReceivedAt(),
                 registered.getStorageStatus(), execution == null ? null : execution.getId(),
+                execution == null ? null : execution.getDocumentStatus(),
                 execution == null ? ImportExecutionStatus.DUPLICATE : execution.getStatus(),
                 execution == null ? 0 : execution.getDetectedRows(),
                 execution == null ? 0 : execution.getImportedRows(),
@@ -52,7 +54,8 @@ public class ImportController {
 
     public record Response(UUID id, SourceAdapter adapter, String filename, long byteSize,
                            String sha256, Instant receivedAt, StorageStatus storageStatus,
-                           UUID executionId, ImportExecutionStatus executionStatus,
+                           UUID executionId, ImportDocumentStatus documentStatus,
+                           ImportExecutionStatus executionStatus,
                            int detectedRows, int importedRows, int duplicateRows, int warningCount,
                            boolean duplicate, int suggestedHttpStatus) {}
 }

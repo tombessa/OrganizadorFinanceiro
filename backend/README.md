@@ -18,11 +18,13 @@ As demais rotas exigem `Authorization: Bearer <access_token>`:
 - `GET|POST /api/institutions`
 - `GET|POST /api/accounts`
 - `GET|POST /api/cards`
-- `POST /api/imports/register` (`multipart/form-data` com `adapter`, `file` e `targetId` para conta/cartão)
+- `POST /api/imports/register` (`multipart/form-data` com `adapter`, `file`, `targetId` para conta/cartão
+  e `documentStatus=POSTED|PROJECTED` para faturas)
 
-`INTER_ACCOUNT_CSV` já executa o pipeline completo: valida metadados e saldos, grava RAW,
-normaliza os lançamentos e informa quantidades detectadas, novas e duplicadas. Os demais
-adaptadores permanecem no estado `RECEIVED` até seus incrementos do Marco 2.
+`INTER_ACCOUNT_CSV` e `INTER_CARD_CSV` executam o pipeline completo. A conta valida metadados e
+saldos; o cartão valida compras, créditos e parcelas e separa faturas efetivas de projeções futuras.
+Ambos gravam RAW, normalizam os lançamentos e informam quantidades detectadas, novas e duplicadas.
+Os demais adaptadores permanecem no estado `RECEIVED` até seus incrementos do Marco 2.
 
 ## Supabase
 

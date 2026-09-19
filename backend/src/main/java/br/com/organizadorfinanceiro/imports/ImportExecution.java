@@ -35,6 +35,10 @@ public class ImportExecution extends OwnedEntity {
     private ImportTargetType targetType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "document_status", length = 20)
+    private ImportDocumentStatus documentStatus;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private ImportExecutionStatus status;
 
@@ -72,12 +76,13 @@ public class ImportExecution extends OwnedEntity {
     }
 
     public ImportExecution(UUID userId, ImportFile importFile, FinancialAccount account,
-                           CreditCard creditCard, SourceAdapter adapter) {
+                           CreditCard creditCard, SourceAdapter adapter, ImportDocumentStatus documentStatus) {
         super(userId);
         this.importFile = importFile;
         this.account = account;
         this.creditCard = creditCard;
         this.targetType = adapter.targetType();
+        this.documentStatus = documentStatus;
         this.status = ImportExecutionStatus.RECEIVED;
         this.adapterVersion = adapter.version();
         this.rulesVersion = "foundation-v1";
@@ -106,6 +111,7 @@ public class ImportExecution extends OwnedEntity {
     public FinancialAccount getAccount() { return account; }
     public CreditCard getCreditCard() { return creditCard; }
     public ImportTargetType getTargetType() { return targetType; }
+    public ImportDocumentStatus getDocumentStatus() { return documentStatus; }
     public ImportExecutionStatus getStatus() { return status; }
     public int getDetectedRows() { return detectedRows; }
     public int getImportedRows() { return importedRows; }

@@ -14,6 +14,9 @@ import br.com.organizadorfinanceiro.cards.CreditCardRepository;
 import br.com.organizadorfinanceiro.imports.inter.InterAccountCsvParser;
 import br.com.organizadorfinanceiro.imports.inter.InterAccountImportProcessor;
 import br.com.organizadorfinanceiro.imports.inter.InterAccountStatement;
+import br.com.organizadorfinanceiro.imports.inter.InterCardCsvParser;
+import br.com.organizadorfinanceiro.imports.inter.InterCardImportProcessor;
+import br.com.organizadorfinanceiro.imports.inter.InterCardStatement;
 import br.com.organizadorfinanceiro.shared.HashingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,8 @@ public class ImportRegistrationService {
     private final AuditService auditService;
     private final InterAccountCsvParser interAccountParser;
     private final InterAccountImportProcessor interAccountProcessor;
+    private final InterCardCsvParser interCardParser;
+    private final InterCardImportProcessor interCardProcessor;
 
     public ImportRegistrationService(ImportFileRepository repository,
                                      ImportExecutionRepository executionRepository,
@@ -39,7 +44,9 @@ public class ImportRegistrationService {
                                      HashingService hashingService,
                                      AuditService auditService,
                                      InterAccountCsvParser interAccountParser,
-                                     InterAccountImportProcessor interAccountProcessor) {
+                                     InterAccountImportProcessor interAccountProcessor,
+                                     InterCardCsvParser interCardParser,
+                                     InterCardImportProcessor interCardProcessor) {
         this.repository = repository;
         this.executionRepository = executionRepository;
         this.accountRepository = accountRepository;
@@ -49,15 +56,19 @@ public class ImportRegistrationService {
         this.auditService = auditService;
         this.interAccountParser = interAccountParser;
         this.interAccountProcessor = interAccountProcessor;
+        this.interCardParser = interCardParser;
+        this.interCardProcessor = interCardProcessor;
     }
 
     @Transactional
-    public Result register(UUID userId, SourceAdapter adapter, UUID targetId, MultipartFile multipartFile,
+    public Result register(UUID userId, SourceAdapter adapter, UUID targetId,
+                           ImportDocumentStatus documentStatus, MultipartFile multipartFile,
                            ImportFileStorage.Credentials credentials) throws IOException {
         if (multipartFile.isEmpty()) throw new IllegalArgumentException("O arquivo está vazio");
         String filename = safeFilename(multipartFile.getOriginalFilename());
         validateExtension(adapter, filename);
         Target target = findTarget(userId, adapter, targetId);
+        validateDocumentStatus(adapter, documentStatus);
         String hash;
         try (InputStream input = multipartFile.getInputStream()) {
             hash = hashingService.sha256(input);
@@ -67,29 +78,45 @@ public class ImportRegistrationService {
             ImportExecution execution = executionRepository
                     .findFirstByUserIdAndImportFileIdOrderByStartedAtDesc(userId, existing.get().getId())
                     .orElse(null);
+            if (adapter.targetType() == ImportTargetType.CARD && execution != null
+                    && execution.getDocumentStatus() != documentStatus) {
+                throw new IllegalArgumentException("Este arquivo já foi registrado como fatura "
+                        + (execution.getDocumentStatus() == ImportDocumentStatus.PROJECTED ? "projetada" : "efetiva"));
+            }
             return new Result(existing.get(), execution, true);
         }
         InterAccountStatement interAccountStatement = null;
+        InterCardStatement interCardStatement = null;
         if (adapter == SourceAdapter.INTER_ACCOUNT_CSV) {
             try (InputStream input = multipartFile.getInputStream()) {
                 interAccountStatement = interAccountParser.parse(input);
             }
         }
+        if (adapter == SourceAdapter.INTER_CARD_CSV) {
+            try (InputStream input = multipartFile.getInputStream()) {
+                interCardStatement = interCardParser.parse(input);
+            }
+        }
         return registerNew(userId, adapter, target, multipartFile, filename, hash,
-                credentials, interAccountStatement);
+                credentials, documentStatus, interAccountStatement, interCardStatement);
     }
 
     private Result registerNew(UUID userId, SourceAdapter adapter, Target target, MultipartFile multipartFile,
                                String filename, String hash, ImportFileStorage.Credentials credentials,
-                               InterAccountStatement interAccountStatement) throws IOException {
+                               ImportDocumentStatus documentStatus,
+                               InterAccountStatement interAccountStatement,
+                               InterCardStatement interCardStatement) throws IOException {
         ImportFileStorage.StoredObject object = storage.store(userId, adapter, hash, multipartFile, credentials);
         try {
             ImportFile imported = repository.save(new ImportFile(userId, adapter, filename,
                     contentType(adapter), multipartFile.getSize(), hash, object.bucket(), object.path()));
             ImportExecution execution = executionRepository.save(new ImportExecution(
-                    userId, imported, target.account(), target.card(), adapter));
+                    userId, imported, target.account(), target.card(), adapter, documentStatus));
             if (interAccountStatement != null) {
                 interAccountProcessor.process(userId, execution, target.account(), interAccountStatement);
+            }
+            if (interCardStatement != null) {
+                interCardProcessor.process(userId, execution, target.card(), documentStatus, interCardStatement);
             }
             auditService.created(userId, "IMPORT_FILE", imported.getId(), Map.of(
                     "sourceAdapter", adapter.name(),
@@ -100,6 +127,7 @@ public class ImportRegistrationService {
             auditService.created(userId, "IMPORT_EXECUTION", execution.getId(), Map.of(
                     "importFileId", imported.getId().toString(),
                     "targetType", execution.getTargetType().name(),
+                    "documentStatus", execution.getDocumentStatus() == null ? "NOT_APPLICABLE" : execution.getDocumentStatus().name(),
                     "status", execution.getStatus().name(),
                     "adapterVersion", execution.getAdapterVersion(),
                     "rulesVersion", execution.getRulesVersion(),
@@ -133,6 +161,15 @@ public class ImportRegistrationService {
                 yield new Target(null, null);
             }
         };
+    }
+
+    private void validateDocumentStatus(SourceAdapter adapter, ImportDocumentStatus documentStatus) {
+        if (adapter.targetType() == ImportTargetType.CARD && documentStatus == null) {
+            throw new IllegalArgumentException("Informe se a fatura é efetiva ou projetada");
+        }
+        if (adapter.targetType() != ImportTargetType.CARD && documentStatus != null) {
+            throw new IllegalArgumentException("Situação do documento só é aceita para faturas de cartão");
+        }
     }
 
     private String safeFilename(String value) {
