@@ -27,7 +27,7 @@ Ordem: conta CSV, cartão CSV, cartão XLSX, conta PDF e documento de remuneraç
 - [x] RAW imutável e transação normalizada persistidos na mesma execução.
 - [x] Fingerprint por conta, data, descrição, valor e saldo após o lançamento.
 - [x] Relatório de detectados, importados, duplicados e avisos na resposta e no frontend.
-- [ ] Fatura do cartão Inter em CSV.
+- [x] Fatura do cartão Inter em CSV, com compras, créditos, parcelas e projeções futuras.
 - [ ] Fatura do cartão Itaú em XLSX.
 - [ ] Extrato da conta Santander em PDF.
 - [ ] Contracheque em PDF.

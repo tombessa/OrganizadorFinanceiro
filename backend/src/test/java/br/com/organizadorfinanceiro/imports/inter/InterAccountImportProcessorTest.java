@@ -20,6 +20,7 @@ import br.com.organizadorfinanceiro.transactions.FinancialTransaction;
 import br.com.organizadorfinanceiro.transactions.FinancialTransactionRepository;
 import br.com.organizadorfinanceiro.transactions.RawTransaction;
 import br.com.organizadorfinanceiro.transactions.RawTransactionRepository;
+import br.com.organizadorfinanceiro.transactions.TransactionPostingStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -51,6 +52,7 @@ class InterAccountImportProcessorTest {
         verify(transactionRepository).save(transaction.capture());
         assertThat(transaction.getValue().getAmount()).isEqualByComparingTo("40.00");
         assertThat(transaction.getValue().getDirection().name()).isEqualTo("CREDIT");
+        assertThat(transaction.getValue().getPostingStatus()).isEqualTo(TransactionPostingStatus.POSTED);
         verify(execution).markParsing();
         verify(execution).complete(2, 1, 1, 0);
     }

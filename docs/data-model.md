@@ -48,3 +48,11 @@ O fingerprint inclui a conta selecionada, a data, a descrição canônica, o val
 saldo após o lançamento. O saldo diferencia eventos legítimos iguais no mesmo dia e permanece
 estável quando dois extratos possuem períodos sobrepostos. O sinal define somente `DEBIT` ou
 `CREDIT`; a natureza econômica permanece `ADJUSTMENT` até o motor explicável do Marco 3.
+
+### Fatura do cartão Inter
+
+O fingerprint inclui cartão, data, descrição, categoria, tipo, valor assinado, posição da parcela e
+uma ocorrência ordinal para preservar compras legítimas idênticas. Valores positivos no documento
+viram `DEBIT` no cartão e valores negativos viram `CREDIT`; a natureza econômica continua
+`ADJUSTMENT` até o Marco 3. `document_status` registra se a fonte é efetiva ou projetada, enquanto
+`posting_status` impede que parcelas futuras sejam contabilizadas como despesas já realizadas.
