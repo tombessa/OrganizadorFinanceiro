@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ public class SupabaseImportFileStorage implements ImportFileStorage {
     private final String baseUrl;
     private final String bucket;
 
+    @Autowired
     public SupabaseImportFileStorage(ImportStorageProperties properties) {
         this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build(), properties);
     }
