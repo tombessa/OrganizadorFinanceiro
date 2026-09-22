@@ -19,11 +19,12 @@ As demais rotas exigem `Authorization: Bearer <access_token>`:
 - `GET|POST /api/accounts`
 - `GET|POST /api/cards`
 - `POST /api/imports/register` (`multipart/form-data` com `adapter`, `file`, `targetId` para conta/cartão
-  e `documentStatus=POSTED|PROJECTED` para faturas)
+  e `documentStatus=POSTED|PROJECTED` somente para faturas Inter)
 
-`INTER_ACCOUNT_CSV` e `INTER_CARD_CSV` executam o pipeline completo. A conta valida metadados e
+`INTER_ACCOUNT_CSV`, `INTER_CARD_CSV` e `ITAU_CARD_XLSX` executam o pipeline completo. A conta valida metadados e
 saldos; o cartão valida compras, créditos e parcelas e separa faturas efetivas de projeções futuras.
-Ambos gravam RAW, normalizam os lançamentos e informam quantidades detectadas, novas e duplicadas.
+O Itaú detecta automaticamente faturas pagas, abertas e futuras pelo título da planilha.
+Os três gravam RAW, normalizam os lançamentos e informam quantidades detectadas, novas e duplicadas.
 Os demais adaptadores permanecem no estado `RECEIVED` até seus incrementos do Marco 2.
 
 ## Supabase

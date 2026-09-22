@@ -37,7 +37,7 @@ export interface ImportRegistration {
   receivedAt: string;
   storageStatus: "STORED" | "DELETED";
   executionId: string | null;
-  documentStatus: "POSTED" | "PROJECTED" | null;
+  documentStatus: "POSTED" | "PROJECTED" | "OPEN" | "PAID" | null;
   executionStatus: "RECEIVED" | "PARSING" | "COMPLETED" | "COMPLETED_WITH_WARNINGS" | "FAILED" | "DUPLICATE";
   detectedRows: number;
   importedRows: number;

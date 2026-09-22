@@ -17,6 +17,9 @@ import br.com.organizadorfinanceiro.imports.inter.InterAccountStatement;
 import br.com.organizadorfinanceiro.imports.inter.InterCardCsvParser;
 import br.com.organizadorfinanceiro.imports.inter.InterCardImportProcessor;
 import br.com.organizadorfinanceiro.imports.inter.InterCardStatement;
+import br.com.organizadorfinanceiro.imports.itau.ItauCardImportProcessor;
+import br.com.organizadorfinanceiro.imports.itau.ItauCardStatement;
+import br.com.organizadorfinanceiro.imports.itau.ItauCardXlsxParser;
 import br.com.organizadorfinanceiro.shared.HashingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +38,8 @@ public class ImportRegistrationService {
     private final InterAccountImportProcessor interAccountProcessor;
     private final InterCardCsvParser interCardParser;
     private final InterCardImportProcessor interCardProcessor;
+    private final ItauCardXlsxParser itauCardParser;
+    private final ItauCardImportProcessor itauCardProcessor;
 
     public ImportRegistrationService(ImportFileRepository repository,
                                      ImportExecutionRepository executionRepository,
@@ -46,7 +51,9 @@ public class ImportRegistrationService {
                                      InterAccountCsvParser interAccountParser,
                                      InterAccountImportProcessor interAccountProcessor,
                                      InterCardCsvParser interCardParser,
-                                     InterCardImportProcessor interCardProcessor) {
+                                     InterCardImportProcessor interCardProcessor,
+                                     ItauCardXlsxParser itauCardParser,
+                                     ItauCardImportProcessor itauCardProcessor) {
         this.repository = repository;
         this.executionRepository = executionRepository;
         this.accountRepository = accountRepository;
@@ -58,6 +65,8 @@ public class ImportRegistrationService {
         this.interAccountProcessor = interAccountProcessor;
         this.interCardParser = interCardParser;
         this.interCardProcessor = interCardProcessor;
+        this.itauCardParser = itauCardParser;
+        this.itauCardProcessor = itauCardProcessor;
     }
 
     @Transactional
@@ -69,6 +78,13 @@ public class ImportRegistrationService {
         validateExtension(adapter, filename);
         Target target = findTarget(userId, adapter, targetId);
         validateDocumentStatus(adapter, documentStatus);
+        ItauCardStatement itauCardStatement = null;
+        if (adapter == SourceAdapter.ITAU_CARD_XLSX) {
+            try (InputStream input = multipartFile.getInputStream()) {
+                itauCardStatement = itauCardParser.parse(input);
+                documentStatus = itauCardStatement.documentStatus();
+            }
+        }
         String hash;
         try (InputStream input = multipartFile.getInputStream()) {
             hash = hashingService.sha256(input);
@@ -80,8 +96,7 @@ public class ImportRegistrationService {
                     .orElse(null);
             if (adapter.targetType() == ImportTargetType.CARD && execution != null
                     && execution.getDocumentStatus() != documentStatus) {
-                throw new IllegalArgumentException("Este arquivo já foi registrado como fatura "
-                        + (execution.getDocumentStatus() == ImportDocumentStatus.PROJECTED ? "projetada" : "efetiva"));
+                throw new IllegalArgumentException("Este arquivo já foi registrado com outra situação de fatura");
             }
             return new Result(existing.get(), execution, true);
         }
@@ -98,14 +113,15 @@ public class ImportRegistrationService {
             }
         }
         return registerNew(userId, adapter, target, multipartFile, filename, hash,
-                credentials, documentStatus, interAccountStatement, interCardStatement);
+                credentials, documentStatus, interAccountStatement, interCardStatement, itauCardStatement);
     }
 
     private Result registerNew(UUID userId, SourceAdapter adapter, Target target, MultipartFile multipartFile,
                                String filename, String hash, ImportFileStorage.Credentials credentials,
                                ImportDocumentStatus documentStatus,
                                InterAccountStatement interAccountStatement,
-                               InterCardStatement interCardStatement) throws IOException {
+                               InterCardStatement interCardStatement,
+                               ItauCardStatement itauCardStatement) throws IOException {
         ImportFileStorage.StoredObject object = storage.store(userId, adapter, hash, multipartFile, credentials);
         try {
             ImportFile imported = repository.save(new ImportFile(userId, adapter, filename,
@@ -117,6 +133,9 @@ public class ImportRegistrationService {
             }
             if (interCardStatement != null) {
                 interCardProcessor.process(userId, execution, target.card(), documentStatus, interCardStatement);
+            }
+            if (itauCardStatement != null) {
+                itauCardProcessor.process(userId, execution, target.card(), itauCardStatement);
             }
             auditService.created(userId, "IMPORT_FILE", imported.getId(), Map.of(
                     "sourceAdapter", adapter.name(),
@@ -164,8 +183,15 @@ public class ImportRegistrationService {
     }
 
     private void validateDocumentStatus(SourceAdapter adapter, ImportDocumentStatus documentStatus) {
-        if (adapter.targetType() == ImportTargetType.CARD && documentStatus == null) {
+        if (adapter == SourceAdapter.INTER_CARD_CSV && documentStatus == null) {
             throw new IllegalArgumentException("Informe se a fatura é efetiva ou projetada");
+        }
+        if (adapter == SourceAdapter.INTER_CARD_CSV && documentStatus != ImportDocumentStatus.POSTED
+                && documentStatus != ImportDocumentStatus.PROJECTED) {
+            throw new IllegalArgumentException("A fatura Inter aceita somente situação efetiva ou projetada");
+        }
+        if (adapter == SourceAdapter.ITAU_CARD_XLSX && documentStatus != null) {
+            throw new IllegalArgumentException("A situação da fatura Itaú é detectada automaticamente");
         }
         if (adapter.targetType() != ImportTargetType.CARD && documentStatus != null) {
             throw new IllegalArgumentException("Situação do documento só é aceita para faturas de cartão");

@@ -123,6 +123,17 @@ public class FinancialTransaction extends OwnedEntity {
                                                           BigDecimal signedAmount, String description,
                                                           String sourceReference, String fingerprint,
                                                           TransactionPostingStatus postingStatus) {
+        return fromCardStatement(userId, rawTransaction, creditCard, transactionDate, signedAmount,
+                description, sourceReference, fingerprint, postingStatus,
+                SourceAdapter.INTER_CARD_CSV, false);
+    }
+
+    public static FinancialTransaction fromCardStatement(UUID userId, RawTransaction rawTransaction,
+                                                          CreditCard creditCard, LocalDate transactionDate,
+                                                          BigDecimal signedAmount, String description,
+                                                          String sourceReference, String fingerprint,
+                                                          TransactionPostingStatus postingStatus,
+                                                          SourceAdapter source, boolean statementPayment) {
         FinancialTransaction transaction = new FinancialTransaction(userId);
         transaction.rawTransaction = rawTransaction;
         transaction.creditCard = creditCard;
@@ -132,14 +143,22 @@ public class FinancialTransaction extends OwnedEntity {
         transaction.currency = "BRL";
         transaction.direction = signedAmount.signum() < 0
                 ? TransactionDirection.CREDIT : TransactionDirection.DEBIT;
-        transaction.transactionType = TransactionType.ADJUSTMENT;
+        transaction.transactionType = statementPayment
+                ? TransactionType.CREDIT_CARD_PAYMENT : TransactionType.ADJUSTMENT;
         transaction.postingStatus = postingStatus;
         transaction.rawDescription = description;
         transaction.normalizedDescription = description;
-        transaction.source = SourceAdapter.INTER_CARD_CSV;
+        transaction.source = source;
         transaction.sourceReference = sourceReference;
         transaction.transactionFingerprint = fingerprint;
+        transaction.statementPayment = statementPayment;
         return transaction;
+    }
+
+    public void promoteToPosted() {
+        if (postingStatus != TransactionPostingStatus.PROJECTED) return;
+        postingStatus = TransactionPostingStatus.POSTED;
+        postingDate = transactionDate;
     }
 
     public RawTransaction getRawTransaction() { return rawTransaction; }
