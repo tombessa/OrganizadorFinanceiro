@@ -214,6 +214,9 @@ label { display: block; margin: 16px 0 6px; font-size: 0.78rem; font-weight: 700
 .import-form { display: grid; grid-template-columns: minmax(170px, 0.8fr) minmax(170px, 0.8fr) minmax(240px, 1.5fr) auto; align-items: end; gap: 14px; }
 .import-form label { color: #dce8e3; }
 .file-field small { display: block; margin-top: 6px; color: #9fb8ae; }
+.import-note { min-height: 64px; padding: 10px 12px; border: 1px solid #315449; border-radius: 10px; background: #142b25; }
+.import-note strong, .import-note small { display: block; }
+.import-note small { margin-top: 5px; color: #9fb8ae; }
 .selected-file { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.08); }
 .selected-file small { color: #aec5bc; }
 .import-result { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; margin: 18px 0 0; }

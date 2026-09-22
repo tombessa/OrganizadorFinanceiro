@@ -27,11 +27,14 @@ depois de persistir todas as linhas válidas e suas contagens em uma transação
 
 ## Cartão XLSX
 
-- Uma aba por competência; cabeçalho e lançamentos devem ser localizados por rótulo.
+- O título identifica automaticamente `Fatura Paga`, `Fatura Aberta` ou `Fatura Próxima`.
+- A primeira aba contém uma competência; cabeçalho e lançamentos são localizados por rótulo.
 - Lançamentos: `Data`, `Lançamento`, `Parcelamento`, `Valor`.
 - Data é serial numérico do Excel.
 - Há cartões físicos, virtuais recorrentes e virtuais temporários, identificados pelos quatro últimos dígitos.
-- Pagamentos da fatura não são novas despesas.
+- O cartão principal selecionado deve corresponder ao final informado no arquivo.
+- `Pagamento Boleto` é registrado como quitação de fatura, não como receita ou nova despesa.
+- O valor exibido deve reconciliar com a soma dos lançamentos, excluído somente o pagamento da própria fatura.
 - O parcelamento informa parcela atual e total.
 
 ## Conta corrente PDF
