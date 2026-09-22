@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 
 class SupabaseImportFileStorageContextTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withPropertyValues("app.import-storage.supabase-url=https://example.supabase.co")
+            .withBean(ImportStorageProperties.class, SupabaseImportFileStorageContextTest::properties)
             .withUserConfiguration(StorageConfiguration.class);
 
     @Test
@@ -20,8 +20,14 @@ class SupabaseImportFileStorageContextTest {
         });
     }
 
+    private static ImportStorageProperties properties() {
+        ImportStorageProperties properties = new ImportStorageProperties();
+        properties.setSupabaseUrl("https://example.supabase.co");
+        return properties;
+    }
+
     @Configuration(proxyBeanMethods = false)
-    @Import({ImportStorageProperties.class, SupabaseImportFileStorage.class})
+    @Import(SupabaseImportFileStorage.class)
     static class StorageConfiguration {
     }
 }
